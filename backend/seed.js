@@ -7,8 +7,7 @@ const Book = require("./models/Book");
 const Membership = require("./models/Membership");
 
 const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb://localhost:27017/library_db";
+  process.env.MONGODB_URI || "mongodb://localhost:27017/library_db";
 
 async function seed() {
   await mongoose.connect(MONGODB_URI, {
@@ -22,8 +21,8 @@ async function seed() {
   await Membership.deleteMany({});
 
   // Admin and user
-  const adminPass = await bcrypt.hash('adminpass', 10);
-  const userPass = await bcrypt.hash('userpass', 10);
+  const adminPass = await bcrypt.hash("adminpass", 10);
+  const userPass = await bcrypt.hash("userpass", 10);
 
   await User.create([
     {
@@ -45,18 +44,25 @@ async function seed() {
   // Seed Books
   await Book.create([
     {
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
+      title: "DBMS",
+      author: "C.J. Date",
       type: "book",
       available: true,
       serialNumber: "B001",
     },
     {
-      title: "Inception",
-      author: "Christopher Nolan",
+      title: "DSTL",
+      author: "Jane Doe",
       type: "movie",
       available: true,
       serialNumber: "M001",
+    },
+    {
+      title: "RER",
+      author: "John Smith",
+      type: "movie",
+      available: true,
+      serialNumber: "N001",
     },
   ]);
 

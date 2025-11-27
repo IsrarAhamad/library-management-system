@@ -20,6 +20,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <>
+      {/* Overlay for mobile */}
       {!collapsed && (
         <div
           className="fixed inset-0 z-10 bg-black bg-opacity-30 md:hidden"

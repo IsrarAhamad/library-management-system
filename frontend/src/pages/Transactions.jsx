@@ -16,6 +16,7 @@ export default function Transactions() {
   const [memberships, setMemberships] = useState([]);
   const [selectedTxn, setSelectedTxn] = useState(null);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const user = getCurrentUser();
 
   const refreshTransactions = async () => {
@@ -47,9 +48,10 @@ export default function Transactions() {
         setError('Session expired. Please log in again.');
         return;
       }
+      let result;
       if (mode === 'issue') {
-        await issueBookTxn({
-          bookId: formValues.bookId,
+        result = await issueBookTxn({
+          serialNumber: formValues.serialNumber,
           membershipId: formValues.membershipId,
           userId: user?.id,
           issueDate: formValues.issueDate,
@@ -57,8 +59,8 @@ export default function Transactions() {
           remarks: formValues.remarks
         });
       } else {
-        await returnBookTxn({
-          transactionId: formValues.transactionId,
+        result = await returnBookTxn({
+          serialNumber: formValues.serialNumber,
           returnDate: formValues.returnDate,
           remarks: formValues.remarks,
           finePaid: formValues.finePaid
@@ -67,6 +69,10 @@ export default function Transactions() {
       setSelectedTxn(null);
       setError('');
       await refreshTransactions();
+      if (result?.message) {
+        setSuccessMessage(result.message);
+        setTimeout(() => setSuccessMessage(''), 3500);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Request failed. Please check your inputs.');
     }
@@ -75,15 +81,15 @@ export default function Transactions() {
   const handleTxnClick = (txn) => {
     if (mode !== 'return') return;
     setSelectedTxn({
-      transactionId: txn._id,
-      bookId: txn.book?._id,
+      serialNumber: txn.book?.serialNumber,
       membershipId: txn.membership?._id,
       bookName: txn.book?.title,
-      serialNumber: txn.book?.serialNumber,
       author: txn.book?.author,
       issueDate: txn.issueDate,
       returnDate: txn.returnDate,
-      remarks: txn.remarks
+      remarks: txn.remarks,
+      fine: txn.fine,
+      finePaid: txn.finePaid
     });
   };
 
@@ -95,6 +101,7 @@ export default function Transactions() {
         <button className={`px-4 py-2 rounded ${mode==='return'?'bg-blue-500 text-white':'bg-gray-200'}`} onClick={()=>setMode('return')}>Return Book</button>
       </div>
       {error && <div className="text-red-600 mb-4">{error}</div>}
+      {successMessage && <div className="p-2 mb-2 bg-green-100 text-green-800 rounded">{successMessage}</div>}
       {!books.length && (
         <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded">No books available to issue. Please add books in Maintenance.</div>
       )}

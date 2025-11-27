@@ -15,19 +15,29 @@ exports.getTransactions = async (req, res) => {
 // Issue a book
 exports.issueBook = async (req, res) => {
   try {
-    const { bookId, userId, membershipId, issueDate, returnDate, remarks } = req.body;
-    if (!bookId || !userId || !membershipId || !issueDate || !returnDate) {
+    const { serialNumber, userId, membershipId, issueDate, returnDate, remarks } = req.body;
+    if (!serialNumber || !membershipId || !issueDate || !returnDate) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-    // Check book availability
-    const book = await Book.findById(bookId);
+    // Find book by serial number
+    const book = await Book.findOne({ serialNumber });
     if (!book || !book.available) {
       return res.status(400).json({ message: 'Book not available' });
     }
-    // Create transaction
+    // Find user from membership if userId not provided
+    let finalUserId = userId;
+    if (!finalUserId && membershipId) {
+      const membership = await Membership.findById(membershipId).populate('user');
+      if (membership && membership.user) {
+        finalUserId = membership.user._id;
+      }
+    }
+    if (!finalUserId) {
+      return res.status(400).json({ message: 'Could not determine user.' });
+    }
     const transaction = new Transaction({
-      book: bookId,
-      user: userId,
+      book: book._id,
+      user: finalUserId,
       membership: membershipId,
       issueDate,
       returnDate,
@@ -36,19 +46,25 @@ exports.issueBook = async (req, res) => {
     book.available = false;
     await book.save();
     await transaction.save();
-    res.status(201).json(transaction);
+    res.status(201).json({ message: 'Book is issued', transaction });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
 
-// Return book (with fine calculation placeholder)
+// Return book (by serialNumber only)
 exports.returnBook = async (req, res) => {
   try {
-    const { transactionId, returnDate, remarks, finePaid } = req.body;
-    const transaction = await Transaction.findById(transactionId);
+    const { serialNumber, returnDate, remarks, finePaid } = req.body;
+    // Find book by serial number
+    const book = await Book.findOne({ serialNumber });
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+    // Find non-returned transaction for this book
+    const transaction = await Transaction.findOne({ book: book._id, finePaid: false }); // or other means to filter ongoing
     if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
+      return res.status(404).json({ message: 'Issued transaction not found' });
     }
     // Fine: $5 per day late (example logic)
     const expectedReturn = new Date(transaction.returnDate);
@@ -72,13 +88,10 @@ exports.returnBook = async (req, res) => {
       transaction.finePaid = true;
     }
     // Make the book available again
-    const book = await Book.findById(transaction.book);
-    if (book) {
-      book.available = true;
-      await book.save();
-    }
+    book.available = true;
+    await book.save();
     await transaction.save();
-    res.json(transaction);
+    res.json({ message: 'Book is returned', transaction });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
