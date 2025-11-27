@@ -209,6 +209,10 @@ export default function TransactionsForm({
       {mode === 'return' && (
         <>
           <div>
+            <label className="block font-medium">Issue Date</label>
+            <input type="date" name="issueDate" value={values.issueDate} readOnly className="input bg-gray-100 text-gray-500" />
+          </div>
+          <div>
             <label className="block font-medium">Return Date</label>
             <input type="date" name="returnDate" value={values.returnDate} onChange={handleChange} className="input" min={values.issueDate} max={maxReturnDate} />
             {errors.returnDate && <span className="text-red-500 text-xs">{errors.returnDate}</span>}

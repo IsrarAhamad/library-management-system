@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function BookForm({ initial = {}, onSubmit }) {
   const [values, setValues] = useState({
@@ -9,6 +9,16 @@ export default function BookForm({ initial = {}, onSubmit }) {
     available: typeof initial.available === 'boolean' ? initial.available : true
   });
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setValues({
+      title: initial.title || '',
+      author: initial.author || '',
+      type: initial.type || 'book',
+      serialNumber: initial.serialNumber || '',
+      available: typeof initial.available === 'boolean' ? initial.available : true
+    });
+  }, [initial]);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -22,6 +32,7 @@ export default function BookForm({ initial = {}, onSubmit }) {
     if (!values.title) errs.title = 'Required';
     if (!values.author) errs.author = 'Required';
     if (!values.serialNumber) errs.serialNumber = 'Required';
+    if (!values.type) errs.type = 'Required';
     return errs;
   }
   function handleSubmit(e) {
@@ -30,6 +41,7 @@ export default function BookForm({ initial = {}, onSubmit }) {
     setErrors(errs);
     if (Object.keys(errs).length === 0 && onSubmit) {
       onSubmit(values);
+      setValues({ title: '', author: '', type: 'book', serialNumber: '', available: true });
     }
   }
   return (
@@ -46,12 +58,13 @@ export default function BookForm({ initial = {}, onSubmit }) {
       </div>
       <div>
         <span className="block font-medium">Type</span>
-        <label className="mr-2">
-          <input type="radio" name="type" value="book" checked={values.type==='book'} onChange={handleChange} /> Book
+        <label className="mr-6">
+          <input type="radio" name="type" value="book" checked={values.type==="book"} onChange={handleChange} /> Book
         </label>
         <label>
-          <input type="radio" name="type" value="movie" checked={values.type==='movie'} onChange={handleChange} /> Movie
+          <input type="radio" name="type" value="movie" checked={values.type==="movie"} onChange={handleChange} /> Movie
         </label>
+        {errors.type && <span className="text-red-500 text-xs ml-2">{errors.type}</span>}
       </div>
       <div>
         <label className="block font-medium">Serial Number</label>

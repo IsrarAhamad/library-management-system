@@ -4,9 +4,11 @@ import MembershipForm from '../components/MembershipForm';
 import {
   getBooks, addBook, updateBook, deleteBook,
   getMemberships, addMembership, updateMembership, deleteMembership,
+  getCurrentUser,
 } from '../services/api';
 
 export default function Maintenance() {
+  const user = getCurrentUser();
   const [tab, setTab] = useState('books');
   const [books, setBooks] = useState([]);
   const [memberships, setMemberships] = useState([]);
@@ -87,8 +89,12 @@ export default function Maintenance() {
               <li key={b._id} className="flex justify-between bg-gray-50 rounded px-2 py-1">
                 <span>{b.title} ({b.type})</span>
                 <div>
-                  <button className="text-blue-600 mr-2" onClick={() => setSelectedBook(b)}>Edit</button>
-                  <button className="text-red-600" onClick={async () => { await deleteBook(b._id); await refreshBooks(); }}>Delete</button>
+                  {user?.role === 'admin' && (
+                    <button className="text-blue-600 mr-2" onClick={() => setSelectedBook(b)}>Update Book</button>
+                  )}
+                  {user?.role === 'admin' && (
+                    <button className="text-red-600" onClick={async () => { await deleteBook(b._id); await refreshBooks(); }}>Delete</button>
+                  )}
                 </div>
               </li>
             ))}
@@ -102,8 +108,12 @@ export default function Maintenance() {
               <li key={m._id} className="flex justify-between bg-gray-50 rounded px-2 py-1">
                 <span>{m.memberName} ({m.membershipNumber})</span>
                 <div>
-                  <button className="text-blue-600 mr-2" onClick={() => setSelectedMembership(m)}>Edit</button>
-                  <button className="text-red-600" onClick={async () => { await deleteMembership(m._id); await refreshMemberships(); }}>Delete</button>
+                  {user?.role === 'admin' || (user?.role === 'user' && user?.name === m.memberName) ? (
+                    <button className="text-blue-600 mr-2" onClick={() => setSelectedMembership(m)}>Update Membership</button>
+                  ) : null}
+                  {user?.role === 'admin' && (
+                    <button className="text-red-600" onClick={async () => { await deleteMembership(m._id); await refreshMemberships(); }}>Delete</button>
+                  )}
                 </div>
               </li>
             ))}

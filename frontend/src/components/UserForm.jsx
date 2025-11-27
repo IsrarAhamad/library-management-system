@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function UserForm({ initial = {}, onSubmit }) {
   const [values, setValues] = useState({
@@ -9,6 +9,16 @@ export default function UserForm({ initial = {}, onSubmit }) {
     role: initial.role || 'user'
   });
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setValues({
+      name: initial.name || '',
+      username: initial.username || '',
+      password: '', // never prefill
+      email: initial.email || '',
+      role: initial.role || 'user'
+    });
+  }, [initial]);
   function handleChange(e) {
     const { name, value } = e.target;
     setValues(vals => ({ ...vals, [name]: value }));
