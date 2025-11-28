@@ -23,7 +23,7 @@ export default function Reports() {
   }, []);
 
   const txnCols = [
-    { label: 'Type', key: 'type', render: x=>x.fine > 0 ? 'Return (Fine)' : x.returnDate ? 'Return' : 'Issue'},
+    { label: 'Type', key: 'type', render: x=>x.finePaid ? 'Returned' : 'Issued'},
     { label: 'User', key: 'user', render: x=>x.user?.name || '' },
     { label: 'Book', key: 'book', render: x=>x.book?.title || '' },
     { label: 'Date', key: 'issueDate', render: x=>x.issueDate?.slice(0,10) }
@@ -41,7 +41,7 @@ export default function Reports() {
     { label: 'End', key: 'endDate', render: x=>(x.endDate||'').slice(0,10) }
   ];
 
-  let data = tab==='transactions' ? txns : (tab==='books' ? books : members);
+  let data = tab==='transactions' ? [...txns].reverse() : (tab==='books' ? books : members);
   let columns = tab==='transactions'?txnCols:tab==='books'?bookCols:memberCols;
 
   return (

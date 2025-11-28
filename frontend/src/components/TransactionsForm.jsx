@@ -14,7 +14,6 @@ export default function TransactionsForm({
     return date.toISOString().split('T')[0];
   }, []);
   
-  // Initial state: all EMPTY (except dates)
   const [values, setValues] = useState({
     bookName: '',
     serialNumber: '',
@@ -22,6 +21,7 @@ export default function TransactionsForm({
     membershipId: '',
     issueDate: today,
     returnDate: defaultReturn,
+    expectedReturnDate: '',
     remarks: '',
     fine: 0,
     finePaid: false
@@ -32,7 +32,6 @@ export default function TransactionsForm({
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
   const bookNameInputRef = useRef();
 
-  // Autocomplete logic: show all on focus, filter as user types
   useEffect(() => {
     if (
       bookNameInputRef.current &&
@@ -52,11 +51,61 @@ export default function TransactionsForm({
   }, [values.bookName, books]);
 
   useEffect(() => {
-    // Auto-select if there is only one available membership and not currently set
     if (memberships.length === 1 && !values.membershipId) {
       setValues(v => ({ ...v, membershipId: memberships[0]._id }));
     }
   }, [memberships]);
+
+  useEffect(() => {
+    if (initial && Object.keys(initial).length > 0) {
+      const expectedReturnDate = initial.expectedReturnDate ? initial.expectedReturnDate.slice(0, 10) : '';
+      const actualReturnDate = initial.returnDate ? initial.returnDate.slice(0, 10) : today;
+      
+      let fine = 0;
+      let finePaid = false;
+      if (mode === 'return' && expectedReturnDate && actualReturnDate) {
+        const expected = new Date(expectedReturnDate);
+        const actual = new Date(actualReturnDate);
+        if (actual > expected) {
+          const diffDays = Math.ceil((actual - expected) / (1000 * 60 * 60 * 24));
+          fine = diffDays * 5; 
+          finePaid = false; 
+        }
+      } else {
+        fine = initial.fine || 0;
+        finePaid = initial.finePaid || false;
+      }
+      
+      setValues(prev => ({
+        ...prev,
+        bookName: initial.bookName || prev.bookName,
+        serialNumber: initial.serialNumber || prev.serialNumber,
+        author: initial.author || prev.author,
+        membershipId: initial.membershipId || prev.membershipId,
+        issueDate: initial.issueDate ? initial.issueDate.slice(0, 10) : prev.issueDate,
+        returnDate: actualReturnDate || prev.returnDate,
+        expectedReturnDate: expectedReturnDate || prev.expectedReturnDate,
+        remarks: initial.remarks || prev.remarks,
+        fine: fine,
+        finePaid: finePaid
+      }));
+    }
+  }, [initial, mode, today]);
+
+  useEffect(() => {
+    if (mode === 'return' && values.returnDate && values.expectedReturnDate) {
+      const expected = new Date(values.expectedReturnDate);
+      const actual = new Date(values.returnDate);
+      let fine = 0;
+      if (actual > expected) {
+        const diffDays = Math.ceil((actual - expected) / (1000 * 60 * 60 * 24));
+        fine = diffDays * 5; 
+      }
+      if (values.fine !== fine) {
+        setValues(prev => ({ ...prev, fine: fine }));
+      }
+    }
+  }, [values.returnDate, values.expectedReturnDate, mode]);
 
   const handleBookNameChange = (e) => {
     const value = e.target.value;
@@ -84,11 +133,24 @@ export default function TransactionsForm({
           next.author = match.author;
         }
       }
+      // Calculate fine when return date changes in return mode
+      if (name === 'returnDate' && mode === 'return') {
+        const expectedReturnDate = next.expectedReturnDate || curr.expectedReturnDate;
+        if (expectedReturnDate && value) {
+          const expectedReturn = new Date(expectedReturnDate);
+          const actualReturn = new Date(value);
+          let fine = 0;
+          if (actualReturn > expectedReturn) {
+            const diffDays = Math.ceil((actualReturn - expectedReturn) / (1000 * 60 * 60 * 24));
+            fine = diffDays * 5; 
+          }
+          next.fine = fine;
+        }
+      }
       return next;
     });
   };
 
-  // Validation logic (unchanged)
   function validate() {
     const errs = {};
     if (!values.serialNumber) errs.serialNumber = 'Enter Book Number';
@@ -103,7 +165,6 @@ export default function TransactionsForm({
     return errs;
   }
 
-  // Submit logic: show success, clear fields, hide after a timer
   async function handleSubmit(e) {
     e.preventDefault();
     const errs = validate();
@@ -119,6 +180,7 @@ export default function TransactionsForm({
           membershipId: '',
           issueDate: today,
           returnDate: defaultReturn,
+          expectedReturnDate: '',
           remarks: '',
           fine: 0,
           finePaid: false
@@ -128,19 +190,12 @@ export default function TransactionsForm({
     }
   }
 
-  // Membership end-date used for max return date
-  const membership = memberships.find(m => m._id === values.membershipId);
   const maxReturnDate = useMemo(() => {
-    if (membership && membership.endDate) {
-      const userEnd = new Date(membership.endDate).toISOString().split('T')[0];
-      return userEnd;
-    }
     const base = values.issueDate ? new Date(values.issueDate) : new Date();
     base.setDate(base.getDate() + 15);
     return base.toISOString().split('T')[0];
-  }, [values.issueDate, membership]);
+  }, [values.issueDate]);
 
-  // ... Render UI ...
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md p-4 bg-white rounded shadow">
       {successMessage && (
@@ -223,9 +278,9 @@ export default function TransactionsForm({
         <label className="block font-medium">Remarks</label>
         <input name="remarks" value={values.remarks} onChange={handleChange} className="input" />
       </div>
-      <div>
+      <div className='hidden'>
         <label className="block font-medium">Fine</label>
-        <input name="fine" value={values.fine} readOnly type="number" className="input bg-gray-100 text-gray-500" />
+        <input name="fine" value={`Rs. ${Number(values.fine) || 0}`} readOnly className="input bg-gray-100 text-gray-500" />
       </div>
       <div className="flex items-center gap-2">
         <input type="checkbox" name="finePaid" checked={values.finePaid} onChange={handleChange} />

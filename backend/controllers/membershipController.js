@@ -48,12 +48,10 @@ exports.updateMembership = async (req, res) => {
       membership.active = !data.cancelled;
     }
     if (data.extend) {
-      // Extend by 6 months by default
       const newEnd = new Date(membership.endDate);
       newEnd.setMonth(newEnd.getMonth() + 6);
       membership.endDate = newEnd;
     }
-    // Otherwise allow updates to all required fields
     membership.memberName = data.memberName || membership.memberName;
     membership.membershipNumber = data.membershipNumber || membership.membershipNumber;
     await membership.save();

@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Login controller
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -23,7 +22,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Register/signup (for user signup, not just admin seed)
 exports.register = async (req, res) => {
   const { username, password, name, role, email } = req.body;
   if (!username || !password || !name || !role || !email) {

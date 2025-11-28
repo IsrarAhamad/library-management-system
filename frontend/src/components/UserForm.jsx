@@ -4,7 +4,7 @@ export default function UserForm({ initial = {}, onSubmit }) {
   const [values, setValues] = useState({
     name: initial.name || '',
     username: initial.username || '',
-    password: '', // never prefill
+    password: '', 
     email: initial.email || '',
     role: initial.role || 'user'
   });
@@ -14,7 +14,7 @@ export default function UserForm({ initial = {}, onSubmit }) {
     setValues({
       name: initial.name || '',
       username: initial.username || '',
-      password: '', // never prefill
+      password: '', 
       email: initial.email || '',
       role: initial.role || 'user'
     });

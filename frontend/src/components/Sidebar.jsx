@@ -20,7 +20,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
   return (
     <>
-      {/* Overlay for mobile */}
       {!collapsed && (
         <div
           className="fixed inset-0 z-10 bg-black bg-opacity-30 md:hidden"
@@ -49,7 +48,6 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               key={item.to}
               to={item.to}
               className={`block px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition ${pathname === item.to ? 'bg-blue-900' : ''}`}
-              onClick={() => setCollapsed(true)}
             >
               {item.label}
             </Link>

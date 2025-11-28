@@ -56,13 +56,11 @@ exports.issueBook = async (req, res) => {
 exports.returnBook = async (req, res) => {
   try {
     const { serialNumber, returnDate, remarks, finePaid } = req.body;
-    // Find book by serial number
     const book = await Book.findOne({ serialNumber });
     if (!book) {
       return res.status(404).json({ message: 'Book not found' });
     }
-    // Find non-returned transaction for this book
-    const transaction = await Transaction.findOne({ book: book._id, finePaid: false }); // or other means to filter ongoing
+    const transaction = await Transaction.findOne({ book: book._id, finePaid: false }); 
     if (!transaction) {
       return res.status(404).json({ message: 'Issued transaction not found' });
     }

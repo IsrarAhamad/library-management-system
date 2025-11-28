@@ -80,16 +80,18 @@ export default function Transactions() {
 
   const handleTxnClick = (txn) => {
     if (mode !== 'return') return;
+    const today = new Date().toISOString().split('T')[0];
     setSelectedTxn({
       serialNumber: txn.book?.serialNumber,
       membershipId: txn.membership?._id,
       bookName: txn.book?.title,
       author: txn.book?.author,
       issueDate: txn.issueDate,
-      returnDate: txn.returnDate,
+      returnDate: today, 
+      expectedReturnDate: txn.returnDate, 
       remarks: txn.remarks,
-      fine: txn.fine,
-      finePaid: txn.finePaid
+      fine: 0,
+      finePaid: false
     });
   };
 
