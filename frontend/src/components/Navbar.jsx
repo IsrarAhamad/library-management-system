@@ -12,7 +12,7 @@ export default function Navbar({ collapsed, setCollapsed }) {
   const showHamburger = typeof setCollapsed === 'function';
 
   return (
-    <nav className="bg-white px-4 py-2 shadow flex justify-between items-center">
+    <nav className="fixed top-0 left-0 w-full bg-white px-4 py-3 shadow flex justify-between items-center">
       <div className="flex items-center gap-3">
         {showHamburger && collapsed && (
           <button

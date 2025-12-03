@@ -41,7 +41,7 @@ function App() {
       {/* Sidebar */}
       {user && <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />}
       <div
-        className={`flex flex-col min-h-screen bg-gray-50 transition-all duration-300
+        className={`flex flex-col min-h-screen bg-gray-50 transition-all duration-300 pt-12
           ${user && !collapsed ? 'md:ml-56' : ''}`}
       >
         {user && <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />}

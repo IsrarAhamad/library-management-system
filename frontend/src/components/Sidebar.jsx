@@ -35,7 +35,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
         `}
       >
         <button
-          className="my-4 ml-auto mr-2 text-2xl text-white"
+          className="my-3 ml-auto mr-3 text-2xl text-white"
           onClick={() => setCollapsed(true)}
           title="Close Sidebar"
           style={{ display: collapsed ? 'none' : 'block' }}
